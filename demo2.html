@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .my-photo {
+        width: 200px;
+        height: 200px;
+    }
+</style>
+<body>
+<div class="container">
+    <div style="height:1297px;background:red;">1231233333333</div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testimg.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testavator.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg.jpg">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg1.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/codeimg.jpg">
+    </div>
+</div>
+
+
+<script>
+    window.onbeforeunload = function (event) {//监听页面刷新-滚动到顶部解决滚动条滚动到一半刷新后scrollTop被置0的问题
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+
+    const len = 200;//缓存距离-可调节
+    const mustRun = 50;//防抖函数的间隔-可调节【用户滚动太快，这里需调小否则滚动到它还未执行checkImg】
+    window.onload = checkImgs;
+    window.onscroll = throttle(checkImgs, mustRun);
+
+    function isInSight(el) {
+        const clientHeight = document.documentElement.clientHeight;
+        const offsetTop = el.offsetTop;
+        const scrollTop = document.documentElement.scrollTop;
+        if (offsetTop < clientHeight + scrollTop + len) {
+            console.log(`offsetTop<clientHeight+scrollTop`);
+            console.log(`${offsetTop} < ${clientHeight + scrollTop + len} = ${clientHeight} + ${scrollTop}+${len} , ${offsetTop < clientHeight + scrollTop + len}`);
+        }
+        return offsetTop < clientHeight + scrollTop + len;//返回true/false，true则表示可以给src赋值了，  +len是给一点缓冲距离
+    }
+
+    let index = 0;
+    function checkImgs() {//检测图片是否快滚动到了
+        const imgs = document.querySelectorAll('.my-photo');
+        for (let i = index; i < imgs.length; i++) {
+            if (imgs[i].src && imgs[i].src !== '') {//图片已加载过可不需要重复赋值
+                continue;
+            }
+            if (isInSight(imgs[i])) {
+                loadImg(imgs[i]);
+                index = i;
+            }
+        }
+        // Array.from(imgs).forEach(el => {//Array.from将一个类似数组或可迭代对象浅拷贝为一个新数组实例
+        //     if (isInSight(el)) {
+        //         loadImg(el);
+        //     }
+        // })
+    }
+
+    function loadImg(el) {
+        if (!el.src) {
+            const source = el.dataset.src;
+            el.src = source;
+        }
+    }
+
+    function throttle(fn, mustRun = 50) {//节流函数，让fn不要每触发一次就调用，间隔500ms
+        const timer = null;
+        let previous = null;
+        return function () {//这个函数return并绑定在onscroll事件上
+            const now = new Date();
+            const context = this;
+            const args = arguments;
+            if (!previous) {//previos是throttle函数的变量，形成闭包，onscroll=throttle()触发函数只绑定执行一次，但是return的函数不停的触发
+                previous = now;
+            }
+            const remaining = now - previous;
+            if (mustRun && remaining >= mustRun) {//时间差>500才能执行fn
+                fn.apply(context, args);
+                previous = now;
+            }
+        }
+    }
+
+</script>
+
+</body>
+</html>

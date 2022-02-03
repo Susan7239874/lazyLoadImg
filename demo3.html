@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .my-photo{
+        width:200px;
+        height:200px;
+    }
+</style>
+<body>
+<div class="container">
+    <div style="height:937px;"></div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testimg.png" >
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testavator.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg.jpg">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg1.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/codeimg.jpg">
+    </div>
+</div>
+
+
+<script>
+
+    function checkImgs() {
+        const imgs = Array.from(document.querySelectorAll(".my-photo"));
+        imgs.forEach(item => io.observe(item));
+    }
+
+    function loadImg(el) {
+        if (!el.src) {
+            const source = el.dataset.src;
+            el.src = source;
+        }
+    }
+    const io = new IntersectionObserver(ioes => {//callback 观察者模式-触发后的回调
+        ioes.forEach(ioe => {//回调是一个数组ioes
+            const el = ioe.target;//dom节点
+            const intersectionRatio = ioe.intersectionRatio;//元素的可见比例,完全可见时为1,完全不可见为0
+            if (intersectionRatio > 0 && intersectionRatio <= 1) {//0~1之间加载图片
+                loadImg(el);
+            }
+            el.onload = el.onerror = () => io.unobserve(el);
+        });
+    });
+
+    checkImgs();//调用
+
+</script>
+</body>
+</html>

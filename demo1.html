@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .my-photo{
+        width:200px;
+        height:200px;
+    }
+</style>
+<body>
+<div class="container">
+    <div style="height:937px;"></div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testimg.png" >
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testavator.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg.jpg">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/testheadbg1.png">
+    </div>
+    <div class="img-area">
+        <img class="my-photo" alt="loading" data-src="./images/codeimg.jpg">
+    </div>
+</div>
+
+
+<script>
+    window.onbeforeunload = function (event) {//监听页面刷新-滚动到顶部解决滚动条滚动到一半刷新后bound.top变小问题，因为getBoundingClientRect是相对屏幕左上角
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+    const len=100;//缓存距离-可调节
+    const mustRun=10;//防抖函数的间隔-可调节
+    window.onload=checkImgs;
+    window.onscroll = throttle(checkImgs,mustRun);
+
+    function isInSight(el) {
+        const bound = el.getBoundingClientRect();//top 是相对视图窗口的左上角，滚动后top会变化
+        const clientHeight = window.innerHeight;
+        //如果只考虑向下滚动加载
+        //const clientWidth=window.innerWeight;
+        if(bound.top <= clientHeight + len){
+            console.log(`bound.top <= clientHeight + len`)
+            console.log(`${bound.top} <= ${clientHeight} + ${len}  ${bound.top <= clientHeight + len}`)
+        }
+
+        return bound.top <= clientHeight + len;//返回true/false，true则表示可以给src赋值了，  +len是给一点缓冲距离
+    }
+
+    let index = 0;
+    function checkImgs() {//检测图片是否快滚动到了
+        const imgs = document.querySelectorAll('.my-photo');
+        for (let i = index; i < imgs.length; i++) {
+            if(imgs[i].src&&imgs[i].src!==''){
+                continue;
+            }
+            if (isInSight(imgs[i])) {
+                loadImg(imgs[i]);
+                index = i;
+            }
+        }
+    }
+
+    function loadImg(el) {
+        if (!el.src) {
+            const source = el.dataset.src;
+            el.src = source;
+        }
+    }
+
+    function throttle(fn, mustRun = 500) {//节流函数，让fn不要每触发一次就调用，间隔500ms
+        const timer = null;
+        let previous = null;
+        return function() {//这个函数return并绑定在onscroll事件上
+            const now = new Date();
+            const context = this;
+            const args = arguments;
+            if (!previous) {//previos是throttle函数的变量，形成闭包，onscroll=throttle()触发函数只绑定执行一次，但是return的函数不停的触发
+                previous = now;
+            }
+            const remaining = now - previous;
+            if (mustRun && remaining >= mustRun) {//时间差>mustRun才能执行fn
+                fn.apply(context, args);
+                previous = now;
+            }
+        }
+    }
+</script>
+</body>
+</html>
